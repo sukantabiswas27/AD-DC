@@ -1,0 +1,173 @@
+sudo apt-get update && sudo apt-get upgrade -y
+
+hostnamectl set-hostname sukantabiswas.tech
+
+hostname -f
+-----------------------------------------
+###sudo nano /etc/hostname
+
+sukantabiswas.tech
+
+-----------------------------------------
+### sudo nano /etc/hosts
+
+
+27.0.0.1       localhost
+192.168.144.146 sukantabiswas.cn.lan sukantabiswas.tech
+::1             localhost ip6-localhost ip6-loopback
+ff02::1         ip6-allnodes
+ff02::2         ip6-allrouters
+# --- BEGIN PVE ---
+127.0.1.1 ubuntu.com ubuntu
+# --- END PVE ---
+
+--------------------------------------------------
+
+ping -c3 sukantabiswas.cn.lan
+
+sudo systemctl disable --now systemd-resolved
+sudo unlink /etc/resolv.conf
+
+sudo touch /etc/resolv.conf
+
+------------------------------------------------------
+Enter the following into /etc/resolv.conf
+
+sudo nano /etc/resolv.conf
+
+-----------------------------------------------------
+
+# Samba server IP address
+nameserver 192.168.144.141
+ 
+# fallback resolver
+nameserver 8.8.8.8
+ 
+# main domain for Samba
+search cn.lan
+---------------------------------------------------------
+
+{As we do not want anything to change this file automatically, we make it immutable so that it does not get modified=====}
+
+sudo chattr +i /etc/resolv.conf
+-------------------------------------------------------------
+                  Installing Samba
+----------------------------------------------------------
+sudo apt update
+sudo apt install -y acl attr samba samba-dsdb-modules samba-vfs-modules smbclient winbind libpam-winbind libnss-winbind libpam-krb5 krb5-config krb5-user dnsutils chrony net-tools
+-----------------------------------------------------
+Enter the appropriate info
+
+
+# Default Kerberos Verion 5 Realm:
+CN.LAN
+ 
+# Kerberos Servers for your realm:
+dc1.cn.lan
+ 
+# Adminitraive server for your Kerberos realm:
+sukantabiswas.cn.lan
+
+----------------------------------------------------------
+                 Disable Samba Services
+----------------------------------------------------------
+sudo systemctl disable --now smbd nmbd winbind
+
+------------------------------------------------------
+
+sudo systemctl unmask samba-ad-dc
+
+sudo systemctl enable samba-ad-dc
+
+-------------------------------------------
+
+sudo mv /etc/samba/smb.conf /etc/samba/smb.conf.bak
+
+
+-------------------------------------------------------
+             Provision the Active Directory
+---------------------------------------------------------
+
+sudo samba-tool domain provision
+
+-------------------------------------------
+
+sudo mv /etc/krb5.conf /etc/krb5.conf.orig
+sudo cp /var/lib/samba/private/krb5.conf /etc/krb5.conf
+
+sudo systemctl start samba-ad-dc
+sudo systemctl status samba-ad-dc
+
+
+# allow group _chrony to read the directory ntp_signd
+sudo chown root:_chrony /var/lib/samba/ntp_signd/
+ 
+# change the permission of the directory ntp_signd
+sudo chmod 750 /var/lib/samba/ntp_signd/
+
+
+-----------------------------------------------------------------
+                      Update Chrony
+           add the following to /etc/chrony/chrony.conf
+----------------------------------------------------------------
+
+# bind the chrony service to IP address of the Samba AD
+bindcmdaddress 192.168.144.254
+ 
+# allow clients on the network to connect to the Chrony NTP server
+allow 192.168.144.0/24
+ 
+# specify the ntpsigndsocket directory for the Samba AD
+ntpsigndsocket /var/lib/samba/ntp_signd
+
+--------------------------------------------------------
+# restart chronyd service
+sudo systemctl restart chronyd
+
+# verify chronyd service status
+sudo systemctl status chronyd
+
+--------------------------------------------
+
+# verify domain example.lan
+host -t A cn.lan
+
+# verify domain dc1.example.lan
+host -t A sukantabiswas.cn.lan
+----------------------------------------------
+
+# verify SRV record for _kerberos
+host -t SRV _kerberos._udp.cn.lan
+ 
+# verify SRV record for _ldap
+host -t SRV _ldap._tcp.cn.lan
+
+-------------------------------------------------
+
+smbclient -L cn.lan -N
+
+-----------------------------------------------
+
+
+# authenticate to Kerberos using administrator (MUST BE IN CAPS)
+kinit administrator@CN.LAN
+ 
+# verify list cached Kerberos tickets
+klist
+
+
+-------------------------------------------------------
+                     Create your first user (Optional)
+-----------------------------------------------------------
+
+# create a new user in Samba
+sudo samba-tool user create sukanta
+ 
+# checking users on Samba
+sudo samba-tool user list
+
+---------------------------------------------------------------------------
+
+https://www.microsoft.com/en-us/download/details.aspx?id=45520
+
+----------------------------------------------------------------------
