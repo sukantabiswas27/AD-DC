@@ -1,21 +1,23 @@
+
+
 sudo apt-get update && sudo apt-get upgrade -y
 
-hostnamectl set-hostname sukantabiswas.tech
+# set up the hostname
+hostnamectl set-hostname dc1
 
 hostname -f
 -----------------------------------------
 ###sudo nano /etc/hostname
 
-sukantabiswas.tech
-
+dc1
 -----------------------------------------
 ### sudo nano /etc/hosts
 
 
 27.0.0.1       localhost
-192.168.144.146 sukantabiswas.cn.lan sukantabiswas.tech
+192.168.144.148 sukantabiswas.sb.tech sukantabiswas.tech
 ::1             localhost ip6-localhost ip6-loopback
-ff02::1         ip6-allnodes
+ff02::1         ip6-allnode
 ff02::2         ip6-allrouters
 # --- BEGIN PVE ---
 127.0.1.1 ubuntu.com ubuntu
@@ -23,7 +25,7 @@ ff02::2         ip6-allrouters
 
 --------------------------------------------------
 
-ping -c3 sukantabiswas.cn.lan
+ping -c3 dc1.sb.lan
 
 sudo systemctl disable --now systemd-resolved
 sudo unlink /etc/resolv.conf
@@ -38,13 +40,13 @@ sudo nano /etc/resolv.conf
 -----------------------------------------------------
 
 # Samba server IP address
-nameserver 192.168.144.141
+nameserver 192.168.144.149
  
 # fallback resolver
 nameserver 8.8.8.8
  
 # main domain for Samba
-search cn.lan
+search sb.lan
 ---------------------------------------------------------
 
 {As we do not want anything to change this file automatically, we make it immutable so that it does not get modified=====}
@@ -60,13 +62,13 @@ Enter the appropriate info
 
 
 # Default Kerberos Verion 5 Realm:
-CN.LAN
+SB.LAN
  
 # Kerberos Servers for your realm:
-dc1.cn.lan
+dc1.sb.lan
  
 # Adminitraive server for your Kerberos realm:
-sukantabiswas.cn.lan
+dc1.sb.lan
 
 ----------------------------------------------------------
                  Disable Samba Services
@@ -112,7 +114,7 @@ sudo chmod 750 /var/lib/samba/ntp_signd/
 ----------------------------------------------------------------
 
 # bind the chrony service to IP address of the Samba AD
-bindcmdaddress 192.168.144.254
+bindcmdaddress 192.168.144.150
  
 # allow clients on the network to connect to the Chrony NTP server
 allow 192.168.144.0/24
@@ -130,27 +132,27 @@ sudo systemctl status chronyd
 --------------------------------------------
 
 # verify domain example.lan
-host -t A cn.lan
+host -t A sb.lan
 
 # verify domain dc1.example.lan
-host -t A sukantabiswas.cn.lan
+host -t A dc1.sb.lan
 ----------------------------------------------
 
 # verify SRV record for _kerberos
-host -t SRV _kerberos._udp.cn.lan
+host -t SRV _kerberos._udp.sb.lan
  
 # verify SRV record for _ldap
-host -t SRV _ldap._tcp.cn.lan
+host -t SRV _ldap._tcp.sb.lan
 
 -------------------------------------------------
 
-smbclient -L cn.lan -N
+smbclient -L sb.lan -N
 
 -----------------------------------------------
 
 
 # authenticate to Kerberos using administrator (MUST BE IN CAPS)
-kinit administrator@CN.LAN
+kinit administrator@SB.LAN
  
 # verify list cached Kerberos tickets
 klist
@@ -167,7 +169,32 @@ sudo samba-tool user create sukanta
 sudo samba-tool user list
 
 ---------------------------------------------------------------------------
+                      Windowes setup
+-----------------------------------------------------------------------
+
+add the dns in ncpa.cpl 
+ open power cmd
+
+
+# In Powershell
+Get-DnsClientServerAddress
+ 
+# ping the AD domain dc1.sb.lan
+ping dc1.sb.lan
+ 
+# ping the AD domain sb.lan
+ping sb.lan
+
+
+ #add Windows 10 to Active Directory using POWERSHELL
+Add-Computer -DomainName "sb.lan" -Restart
 
 https://www.microsoft.com/en-us/download/details.aspx?id=45520
 
+
+
+
+
+
 ----------------------------------------------------------------------
+
