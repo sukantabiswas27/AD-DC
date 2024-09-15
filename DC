@@ -191,10 +191,31 @@ Add-Computer -DomainName "sb.lan" -Restart
 
 https://www.microsoft.com/en-us/download/details.aspx?id=45520
 
+---------------------------------------------------------------------
 
 
-
-
+                             Linux Setup
 
 ----------------------------------------------------------------------
 
+On Ubuntu add the Universe repositories
+sudo add-apt-repository universe
+sudo add-apt-repository multiverse
+sudo apt update
+
+
+sudo hostnamectl set-hostname fedora.sb.lan
+sudo nano /etc/resolv.conf
+-----------------------------------
+[Resolve]
+DNS=192.168.144.145 8.8.8.8
+-------------------------------------
+sudo systemctl restart systemd-resolved
+Install required packages (Ubuntu Only)
+
+sudo apt -y install realmd libnss-sss libpam-sss sssd sssd-tools adcli samba-common-bin oddjob oddjob-mkhomedir packagekit
+
+
+sudo realm discover sb.lan
+
+sudo realm join -U Administrator sb.lan
