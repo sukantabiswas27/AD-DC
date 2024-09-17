@@ -192,8 +192,22 @@ Add-Computer -DomainName "sb.lan" -Restart
 https://www.microsoft.com/en-us/download/details.aspx?id=45520
 
 ---------------------------------------------------------------------
+                             policies
+-----------------------------------------------------------------------
+Right click on Group policy and object
+ click new policy
+name usb block
+Right click edit
+user con
+policies
+Administrator templ 
+System
+Removable storage
+All Removable storage {Enable }
+save 
 
-
+link the user group in Ex GPO 
+-------------------------------------------------------------------------------------
                              Linux Setup
 
 ----------------------------------------------------------------------
@@ -219,3 +233,4 @@ sudo apt -y install realmd libnss-sss libpam-sss sssd sssd-tools adcli samba-com
 sudo realm discover sb.lan
 
 sudo realm join -U Administrator sb.lan
+--------------------------------------------------------------------------------------------------
