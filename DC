@@ -189,7 +189,9 @@ ping sb.lan
  #add Windows 10 to Active Directory using POWERSHELL
 Add-Computer -DomainName "sb.lan" -Restart
 
-https://www.microsoft.com/en-us/download/details.aspx?id=45520
+
+Windows 11  => enable => Setting => System => Optional features => install  RSAT Administrator
+Windows 10 => https://www.microsoft.com/en-us/download/details.aspx?id=45520 => install the Exe
 
 ---------------------------------------------------------------------
                              policies
